@@ -1,4 +1,6 @@
 const { Op } = require('sequelize');
+const ingredient = require('../models/ingredient');
+const instruction = require('../models/instruction');
 let Instruction;
 let moduleError;
 
@@ -23,11 +25,14 @@ try {
 async function createNewInstruction(specification, recipeId) {
   // Use the findAll method of the Instruction object to find all the
   // instructions for the specified recipe.
-  //
+  let instructions = await Instruction.findAll({ where: { recipeId } });
   // Use the create method of the Instruction object to create a new object and
   // return it using the maximum listOrder from the query just before this.
-  //
+  let listOrders = instructions.map(instruction => instruction.listOrder);
+  let maxListOrder = Math.max(...listOrders) + 1;
+  return await Instruction.create({ specification, maxListOrder, recipeId });
   // Docs: https://sequelize.org/v5/manual/instances.html#creating-persistent-instances
+
 }
 
 
