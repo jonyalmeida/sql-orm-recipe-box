@@ -34,13 +34,18 @@ async function getTenNewestRecipes() {
   // });
   //
   // Docs: https://sequelize.org/master/class/lib/model.js~Model.html#static-method-findAll
+  const recipes = await Recipe.findAll({
+    limit: 10,
+    order: [['updatedAt', 'DESC']],
+  });
+  //  console.log(recipes);
+  return recipes;
 }
 
 async function getRecipeById(id) {
   // Use the findByPk method of the Recipe object to return the recipe. Use
   // nested eager loading to load the associated instructions, ingredients, and
-  // measurement units.
-  //
+  // measurement units. 
   // In the video, you saw this, where the presenter had to use the "include"
   // directive. The general form for calling and of the "find" methods with
   // eager loading looks like this.
@@ -54,7 +59,16 @@ async function getRecipeById(id) {
   //     }
   //   ]
   // });
-  //
+  const findRecipe = await Recipe.findByPk(id, {
+    include: [
+      Instruction,
+      {
+        model: Ingredient,
+        include: [MeasurementUnit]
+      }
+    ]
+  });
+  return findRecipe;
   // Look at the data model in the instructions to see the relations between the
   // Recipe table and the Ingredients and Instructions table. Figure out which
   // of them goes into that form above as "firstDataModel" and
@@ -79,6 +93,12 @@ async function deleteRecipe(id) {
   // saw in the video.
   //
   // Docs: https://sequelize.org/master/class/lib/model.js~Model.html#instance-method-destroy
+  const deleteRecipe = await Recipe.findByPk(id, {
+    where: {
+      id: id
+    }
+  });
+  await deleteRecipe.destroy();
 }
 
 async function createNewRecipe(title) {
@@ -86,6 +106,7 @@ async function createNewRecipe(title) {
   // return it.
   //
   // Docs: https://sequelize.org/v5/manual/instances.html#creating-persistent-instances
+  return await Recipe.create({ title });
 }
 
 async function searchRecipes(term) {
@@ -93,6 +114,14 @@ async function searchRecipes(term) {
   // given term in its title
   //
   // Docs: https://sequelize.org/v5/manual/querying.html
+  const searchRecipies = await Recipe.findAll({
+    where: {
+      title: {
+        [Op.substring]: term
+      }
+    }
+  });
+  return searchRecipies;
 }
 
 
